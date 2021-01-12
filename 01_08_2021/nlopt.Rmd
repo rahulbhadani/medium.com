@@ -1,0 +1,446 @@
+---
+title: "Nonlinear Optimization in R using `nlopt`"
+author: 
+    - Rahul Bhadani^[The University of Arizona, rahulbhadani@email.arizona.edu]
+date: "`r format(Sys.time(), '%d %B %Y')`"
+bibliography: biblio.bib
+output:
+  
+  pdf_document:
+    citation_package: natbib
+    keep_tex: yes
+    number_sections: yes
+  html_notebook: default
+  html_document:
+    df_print: paged
+classoption:
+- onecolumn
+header-includes:
+- \usepackage[none]{hyphenat}
+- \graphicspath{ {images/} }
+- \usepackage{color}
+- \definecolor{ocre}{RGB}{243,102,25}
+- \usepackage[font={color=ocre,bf},labelfont=bf]{caption}
+- \usepackage{hyperref}
+- \hypersetup{colorlinks=true,citecolor=blue}
+- \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+keep_tex: yes
+abstract: In this article, we present a problem of nonlinear constraint optimization with equality and inequality constraints. Objective functions are defined to be nonlinear and optimizers may have a lower and upper bound. We solve the optimization problem using the open-source R package `nloptr`. Several examples have been presented.
+
+---
+
+# Introduction
+Often in physical science research, we end up with a hard problem of optimizing a function (called objective) that satisfies a range of constraints - linear or non-linear equalities and inequalities. The optimizers usually also have to adhere to the upper and lower bound. We recently worked on a similar problem in Quantum Information Science (QIS) where we attempted to optimize a non-linear function based on a few constraints dictated by rules of physics and mathematics. Interested readers may find our work on Constellation Optimization for Phase-Shift Keying Coherent States [@bhadani2020constellation] where we optimized mutual information for Quadri-Phase-Shift Keying (QPSK) based on a set of constraints.
+
+While chasing the problem of non-linear optimization with a set of constraints, we found out that not all optimization routines are created equally. There several libraries available in different languages such as python (scipy.optimize), Matlab (fmincon), C++ (robotim, nlopt), and R (nloptr). While the list for optimization routine presented here is not exhaustive, some of them are more reliable than others, some provide faster execution than others and some have better documentation. Based on several key factors, we find nloptr, implemented in the R language to be most suitable for nonlinear optimization. nloptr uses nlopt implemented in C++ as a backend. As a result, it provides the elegance of the R language and the speed of C++. The optimization procedure is performed quickly in a fraction of seconds even with a tolerance of the order of 10e-15.
+
+# Nonlinear Optimization Problem
+A general nonlinear optimization problem usually have the form
+
+$$
+\min_{x \in \mathbb{R}^n} f(x)
+$$
+such that
+$$
+g(x) \leq 0
+$$
+$$
+h(x) = 0
+$$
+$$
+x_L \leq x \leq x_U
+$$
+
+where $f$ is an objective function, $g$ defines a set of inequality constraints, $h$ is a set of equality constraints. $x_L$ and $x_U$ are lower and upper bounds respectively. In the literature, several optimization algorithms have been presented. For example, MMA (Method of moving asymptotes) [@svanberg1987method] supports arbitrary nonlinear inequality constraints, (COBYLA) Constrained Optimization BY Linear Approximation [@powell1994direct], (ORIG_DRIECT) DIRECT algorithm [@finkel2003direct]. Optimization algorithms that also support nonlinear equality constraints include ISRES (Improved Stochastic Ranking Evolution Strategy) [@runarsson2000stochastic], (AUGLAG) Augmented Lagrangian Algorithm [@conn1991globally]. A full list of such methods can be found on the nlopt C++ reference page at https://nlopt.readthedocs.io/en/latest/NLopt_Reference/.
+
+In the rest of the article, We provide several examples of solving a constraint optimization problem using R. We use R Studio that combines R compiler and editor. R Studio also provides a knitr tool which is great for writing documentation or articles with inline code which can also generate a latex source code and a pdf file. Most of the example presented here has been modified from test suites used to validate functions in `nloptr` R package.
+
+
+# Installation and loading the library
+Installation of `nloptr` in R is fairly straightforward.
+```{r, eval=FALSE}
+install.packages("nloptr")
+```
+
+```{r}
+library('nloptr')
+```
+
+# Example 1: Optimization with explicit gradient
+In the first example, we will minimize the Rosenbrock Banana function 
+
+$$
+f(x) = 100 (x_2 - x_1^2)^2 + (1-x_1)^2
+$$
+whose gradient is given by
+
+$$
+\nabla f(x) = \begin{pmatrix} -400x_1 (x_2 - x_1^2) - 2(1-x_1) \\ 200(x_2 - x_1^2)  \end{pmatrix}
+$$
+
+
+However, not all the algorithms in `nlopt` require explicit gradient as we will see in further examples. Let's define the objective function and its gradient first:
+```{r}
+eval_f <- function(x)
+{
+    return ( 100 * (x[2] - x[1] * x[1])^2 + (1 - x[1])^2 )
+}
+
+
+eval_grad_f <- function(x) {
+return( c( -400 * x[1] * (x[2] - x[1] * x[1]) - 2 * (1 - x[1]),
+200 * (x[2] - x[1] * x[1]) ) )
+}
+
+```
+
+We also need initial values
+
+```{r}
+x0 <- c( -1.2, 1 )
+```
+
+Before we run the minimization procedure, we need to specify which algorithm we will use. That can be done as follows:
+
+```{r}
+opts <- list("algorithm"="NLOPT_LD_LBFGS",
+"xtol_rel"=1.0e-8)
+
+```
+
+Here, we will use the L-BFGS algorithm. Now we are ready to run the optimization procedure.
+
+```{r}
+# solve Rosenbrock Banana function
+res <- nloptr( x0=x0,
+eval_f=eval_f,
+eval_grad_f=eval_grad_f,
+opts=opts)
+```
+
+See the result
+
+```{r}
+print(res)
+```
+The function is optimized at (1,1) which is the ground truth.
+
+# Example 2: Minimizing with inequality constraint without gradients
+The problem to minimize is
+
+$$
+\min_{x\in \mathbb{R}^n} \sqrt{x_2}
+$$
+$$
+\text{s.t.} x_2 \geq 0$$
+$$
+x_2 \geq (a_1x_1 + b_1)^3$$
+$$
+x_2 \geq  (a_2 x_1 + b_2)^3
+$$
+
+
+
+with $a_1 = 2$, $b_1 = 0$, $a_2 = -1$, and $b_2 = 1$. We re-arrange the constraints to have the form $g(x) \leq 0$:
+
+$$
+(a_1x_1 + b_1)^3 - x_2 \leq 0
+$$
+$$
+(a_2 x_1 + b_2)^3 - x+2 \leq 0
+$$
+
+First, define the objective function
+
+```{r}
+# objective function
+eval_f0 <- function( x, a, b ){
+return( sqrt(x[2]) )
+}
+```
+
+and constraints are
+
+```{r}
+# constraint function
+eval_g0 <- function( x, a, b ) {
+return( (a*x[1] + b)^3 - x[2] )
+}
+```
+
+Define parameters
+
+```{r}
+# define parameters
+a <- c(2,-1)
+b <- c(0, 1)
+```
+
+Now solve using NLOPT_LN_COBYLA without gradient information
+
+```{r}
+
+# Solve using NLOPT_LN_COBYLA without gradient information
+res1 <- nloptr( x0=c(1.234,5.678),
+eval_f=eval_f0,
+lb = c(-Inf,0),
+ub = c(Inf,Inf),
+eval_g_ineq = eval_g0,
+opts = list("algorithm"="NLOPT_LN_COBYLA",
+"xtol_rel"=1.0e-8),
+a = a,
+b = b )
+print( res1 )
+```
+
+# Example 3: Minimization with equality and inequality constraints without gradients
+We want to solve the following constraint optimization problem
+
+$$
+\min_{x} x_1 x_4(x_1 + x_2 + x_3) + x_3$$$$
+\text{s.t.}$$$$
+    x_1 x_2 x_3 x_4 \geq 25$$$$
+    x_1^2 + x_2^2 + x_3^2 + x_4^2 = 40$$$$
+    1 <= x_1,x_2,x_3,x_4 \leq 5
+$$
+
+Let's first solve it with gradients
+
+```{r}
+eval_f <- function( x ) {
+        return( list( "objective" = x[1]*x[4]*(x[1] + x[2] + x[3]) + x[3],
+                      "gradient" = c( x[1] * x[4] + x[4] * (x[1] + x[2] + x[3]),
+                                      x[1] * x[4],
+                                      x[1] * x[4] + 1.0,
+                                      x[1] * (x[1] + x[2] + x[3]) ) ) )
+    }
+
+    # Inequality constraints.
+    eval_g_ineq <- function( x ) {
+        constr <- c( 25 - x[1] * x[2] * x[3] * x[4] )
+
+        grad   <- c( -x[2]*x[3]*x[4],
+                     -x[1]*x[3]*x[4],
+                     -x[1]*x[2]*x[4],
+                     -x[1]*x[2]*x[3] )
+        return( list( "constraints"=constr, "jacobian"=grad ) )
+    }
+
+    # Equality constraints.
+    eval_g_eq <- function( x ) {
+        constr <- c( x[1]^2 + x[2]^2 + x[3]^2 + x[4]^2 - 40 )
+
+        grad   <- c(  2.0*x[1],
+                      2.0*x[2],
+                      2.0*x[3],
+                      2.0*x[4] )
+        return( list( "constraints"=constr, "jacobian"=grad ) )
+    }
+
+    # Initial values.
+    x0 <- c( 1, 5, 5, 1 )
+
+    # Lower and upper bounds of control.
+    lb <- c( 1, 1, 1, 1 )
+    ub <- c( 5, 5, 5, 5 )
+
+    # Optimal solution.
+    solution.opt <- c(1.00000000, 4.74299963, 3.82114998, 1.37940829)
+
+    # Set optimization options.
+    local_opts <- list( "algorithm" = "NLOPT_LD_MMA",
+                        "xtol_rel"  = 1.0e-7 )
+    opts <- list( "algorithm"   = "NLOPT_LD_AUGLAG",
+                  "xtol_rel"    = 1.0e-7,
+                  "maxeval"     = 1000,
+                  "local_opts"  = local_opts,
+                  "print_level" = 0 )
+
+    # Do optimization.
+    res <- nloptr( x0          = x0,
+                   eval_f      = eval_f,
+                   lb          = lb,
+                   ub          = ub,
+                   eval_g_ineq = eval_g_ineq,
+                   eval_g_eq   = eval_g_eq,
+                   opts        = opts )
+
+print(res)
+
+```
+
+This can be solved differently without gradient as follows:
+
+The objective function is defined as
+
+```{r}
+eval_f <- function(x)
+{
+    return (x[1]*x[4]*(x[1] +x[2] + x[3] ) + x[3] )
+}
+```
+
+Inequality constraint can be defined as:
+
+$$
+25 - x_1 x_2 x_3 x_4 \leq 0
+$$
+
+```{r}
+
+eval_g_ineq <- function(x)
+{
+    return (25 - x[1]*x[2]*x[3]*x[4])
+}
+
+```
+
+Equality constraint can be defined as 
+
+```{r}
+eval_g_eq <- function(x)
+{
+    return ( x[1]^2 + x[2]^2 + x[3]^2 + x[4]^2 - 40 )
+}
+```
+
+Let's specify upper and lower bounds
+
+```{r}
+
+lb <- c(1,1,1,1)
+ub <- c(5,5,5,5)
+```
+
+Now, define initial values
+
+```{r}
+x0 <- c(1,5,5,1)
+```
+
+Define options
+
+```{r}
+# Set optimization options.
+local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+"xtol_rel"= 1.0e-15,
+"maxeval"= 160000,
+"local_opts" = local_opts,
+"print_level" = 0 )
+
+```
+
+We use NL_OPT_LD_MMA for local optimization and NL_OPT_GN_ISRES for overall optimization. You can set the tolerance to extremely low to get the best result. The number of iterations is set using maxeval. Setting tolerance to low or the number of iterations to very high may result in the best approximation at the cost of increased computation time.
+
+Finally, optimize
+
+```{r}
+
+res <- nloptr ( x0 = x0,
+                eval_f = eval_f,
+                lb = lb,
+                ub = ub,
+                eval_g_ineq = eval_g_ineq,
+                eval_g_eq = eval_g_eq,
+                opts = opts
+)
+print(res)
+```
+
+# Example 4: Minimization with multiple inequality constraints without gradients
+
+Our objective function in this case is
+
+$$
+\min_{x} x_1^2 + x_2^2
+$$
+
+such that
+
+$$
+1- x_1 + x_2 \leq 0
+$$
+$$
+1- x_1^2 + x_2^2 \leq 0
+$$
+$$
+9x_1^2 + x_2^2 \geq 9
+$$
+$$
+x_1^2 -x_2 >=0
+$$
+$$
+x_2^2 - x_1 \geq 0
+$$
+with bounds on variables as
+
+$$
+-50 \leq x_1, x_2 \leq 50
+$$
+
+Let's write objective function first
+```{r}
+eval_f <- function(x)
+{
+    return ( x[1]^2 + x[2]^2 )
+}
+
+```
+
+Inequality constraints can be written as
+
+```{r}
+eval_g_ineq <- function (x) {
+    constr <- c(1 - x[1] - x[2], 
+                1 - x[1]^2 - x[2]^2,
+                9 - 9*x[1]^2 - x[2]^2,
+                x[2] - x[1]^2,
+                x[1] - x[2]^2)
+    return (constr)
+}
+```
+Lower and upper bounds are defined as
+
+```{r}
+lb <- c(-50, -50)
+ub <- c(50, 50)
+
+```
+
+Initial values are
+
+```{r}
+x0 <- c(3, 1)
+
+```
+
+Finally, define options for `nloptr`
+
+```{r}
+ opts <- list( "algorithm"            = "NLOPT_GN_ISRES",
+                  "xtol_rel"             = 1.0e-15,
+               "maxeval"= 160000,
+                  "tol_constraints_ineq" = rep( 1.0e-10, 5 ))
+
+```
+
+Optimize
+
+```{r}
+res <- nloptr(
+        x0          = x0,
+        eval_f      = eval_f,
+        lb          = lb,
+        ub          = ub,
+        eval_g_ineq = eval_g_ineq,
+        opts        = opts )
+print(res)
+```
+
+While We didn’t present the examples with multiple equality constraints, they are very similar to Example 4. However, be sure to select the optimization algorithm as NLOPT_GN_ISRES.
+
+
+
+# References

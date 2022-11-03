@@ -238,7 +238,7 @@ Then we press **OK**. We save the model as `velocity_control.slx`. The Simulink 
 ## Generating ROS node and corresponding launchfile from the Simulink model
 To generate the ROS node, we type `roscore` in a terminal window, and then in the Simulink ROS tab, press **Build & Load**. It compiles the model and generates a C++ standalone ROS node in `~/catvehicle_ws/src`. The first step in running the simulation is to create a launch file. We first create a new text file in an editor and copy the following code:
 
-```{xml, echo=T, eval=F, warning=FALSE}
+```{bash, echo=T, eval=F, warning=FALSE}
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 <arg name="robot" default="ego"/>

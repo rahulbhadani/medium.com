@@ -276,7 +276,8 @@ sleep 5
 gnome-terminal -- roslaunch catvehicle spawn.launch robot:=ego X:=0.0 laser_sensor:=true 
 sleep 5
 velinjectfile="roslaunch catvehicle velinjector.launch
-csvfile:=/home/ubuntu/test_data.csv input_type:=CSV time_col:=Time vel_col:=speed robot:=leader str_angle:=0.0"
+csvfile:=/home/ubuntu/test_data.csv input_type:=CSV 
+time_col:=Time vel_col:=speed robot:=leader str_angle:=0.0"
 gnome-terminal -- $velinjectfile
 sleep 5
 gnome-terminal -- roslaunch catvehicle velocity_control.launch robot:=ego r:=2.5

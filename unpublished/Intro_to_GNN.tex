@@ -1,0 +1,294 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{amsmath}
+\usepackage{eufrak}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage[bookmarks,bookmarksnumbered, pdfborder={0 0 0},linktocpage, colorlinks=true]{hyperref}
+\hypersetup{citecolor={blue}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage[]{biblatex}
+\addbibresource{biblio.bib}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Graph Neural Network for High-dimensional Data},
+  pdfauthor={Rahul Bhadani},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Graph Neural Network for High-dimensional Data}
+\author{Rahul Bhadani}
+\date{}
+
+\begin{document}
+\maketitle
+
+Traditionally, Artificial Neural Networks (ANN) have employed linear
+relationships in the given dataset of interest to find patterns, do
+model-fitting make predictions, and perform statistical inferences.
+However, ANN works with datasets such as matrices, vectors, and linear
+data structure and are not suited for datasets with a hierarchical
+structure such as trees, heaps, graphs, hypergraphs, hash tables, etc.
+
+For a hierarchical data structure such as a graph, graph neural networks
+(GNN) are well suited to perform learning. GNN has been applied to a
+wide variety of applications such as anomaly detection, clustering,
+classification, and link prediction in the domain of finances,
+cyber-security, bioinformatics, and transportation to name a few. In
+this article, we will explore the basics of GNNs and how they can be
+used to analyze high-dimensional data. In fact, in any domain where
+there is a possibility of a network (e.g.~transportation network,
+biological network, social network, etc.), GNN can be utilized.
+
+\hypertarget{graphs}{%
+\section{Graphs}\label{graphs}}
+
+A graph G is a data structure described by a set of edges E and vertices
+V (also known as nodes): G = (V, E). They can be directed or undirected.
+A graph is often represented by an Adjacency matrix, A. If a graph has N
+nodes, then A has a dimension of (N×N). Alternatively, a graph can be
+represented by sparse edge representation where we only need the list of
+edges, each edge is represented by a tuple (u, v) where u and v denote
+vertices or nodes. We sometimes need another feature matrix to describe
+the nodes in the graph. If each node has F numbers of features, then the
+feature matrix X has a dimension of (N×F).
+
+\hypertarget{why-graphs-are-difficult-to-analyze}{%
+\section{Why graphs are difficult to
+analyze?}\label{why-graphs-are-difficult-to-analyze}}
+
+Graphs can be difficult to analyze because they have many complex and
+interrelated relationships between the nodes and edges.
+
+\begin{itemize}
+\item
+  A graph does not exist in a Euclidean space, which means it cannot be
+  represented by any coordinate systems that we are familiar with. This
+  makes the interpretation of graph data much harder as compared to
+  other types of data such as waves, images, or time-series
+  signals(``text'' can also be treated as time-series), which can be
+  easily mapped to a 2-D or 3-D Euclidean space.
+\item
+  A graph does not have a fixed form.
+\item
+  They are difficult to visualize when we have a large graph.
+\item
+  Graphs can have different types of nodes and edges, with different
+  attributes and properties. This heterogeneity can make it difficult to
+  analyze the graph as a whole.
+\end{itemize}
+
+\hypertarget{then-why-we-should-use-graph-data-structure}{%
+\section{Then why we should use graph data
+structure?}\label{then-why-we-should-use-graph-data-structure}}
+
+Even though we clearly see the challenges of analyzing graphs, they are
+still amazing for understanding and analyzing data since they can
+capture complex and non-linear relationships that are usually not
+represented by linear data structures.
+
+\begin{itemize}
+\item
+  Graphs provide a better way of dealing with abstract concepts like
+  relationships and interactions. They also offer an intuitively visual
+  way of thinking about these concepts. Graphs also form a natural basis
+  for analyzing relationships.
+\item
+  Graphs can solve more complex problems by simplifying the problems
+  into simpler representations or transforming the problems into
+  representations from different perspectives.
+\end{itemize}
+
+\hypertarget{working-principle-of-gnn}{%
+\section{Working Principle of GNN}\label{working-principle-of-gnn}}
+
+The underlying idea behind GNNs is that the characteristics of a node
+are closely tied to those of its neighboring nodes and the connections
+between them. To understand this, consider that if we were to remove the
+neighboring nodes and connections from a single node, it would lose all
+of its context and meaning. Thus, it is through the relationships and
+connections with its neighbors that a node's identity is determined.
+
+\hypertarget{embeddings-in-graph-learning}{%
+\section{Embeddings in Graph
+Learning}\label{embeddings-in-graph-learning}}
+
+Since graphs are unstructured and any representation of a graph can lead
+to very high dimensional matrices, it is important to calculate
+low-dimensional representations. Such representations are called
+embeddings. Since usually a graph contains thousands of nodes, we are
+interested in calculating low-dimensional vector representations of
+nodes. Some methods to calculate node embeddings are (i) Message
+Passing; (ii) Random Projection; (iii) Node2Vec. Out of them, the most
+popular one is Message Passing.
+
+Having this in mind, we then give every node a state (\(x\)) to
+represent its concept. We can use the node state (\(x\)) to produce an
+output (\(o\)), i.e.~decision about the concept. The final state
+(\(x_n\)) of the node is the node embedding. One task of all GNNs is to
+determine the ``node embedding'' of each node, by looking at the
+information on its neighboring nodes.
+
+\hypertarget{node-classification-problem}{%
+\section{Node Classification
+Problem}\label{node-classification-problem}}
+
+In the node classification problem setup, each node \(v\) is
+characterized by its feature \(x_v\) and associated with a ground-truth
+label \(t_v\). Given a partially labeled graph \(G\), the goal is to
+leverage these labeled nodes to predict the labels of the unlabeled. It
+learns to represent each node with a d-dimensional vector (state)
+\(h_v\) which contains the information of its neighborhood.
+Specifically,
+
+\begin{equation}
+h_v = f(x_v, x_{co}[v], h_{ne[v]}, h_{ne[v]})
+\end{equation}
+
+where \(x_{co}[v]\) denotes the features of the edges connecting with
+\(v\), \(h_{ne[v]}\) denotes the embedding of the neighboring nodes of
+\(v\), and \(x_{ne[v]}\) denotes the features of the neighboring nodes
+of \(v\).
+
+Since we are seeking a unique solution for \(h_v\), we can apply
+Banach's fixed point theorem and rewrite the above equation as an
+iterative update process. Such operation is often referred to as message
+passing or neighborhood aggregation. Ultimately, it leads to
+
+\begin{equation}
+H^{t+1} = F(H^t, X)
+\end{equation}
+
+where \(H\) and \(X\) denote the concatenation of all the \(h\) and
+\(x\), respectively. The output of the GNN is computed by passing the
+state \(h_v\) as well as the feature \(x_v\) to an output function
+\(g\).
+
+\begin{equation}
+o_v = g(h_v, x_v)
+\end{equation}
+
+Both \(f\) and \(g\) here can be interpreted as feed-forward
+fully-connected Neural Networks. The L1 loss can be straightforwardly
+formulated as the following:
+
+\begin{equation}
+loss = \sum_{i=1}^p (t_i - o_i)
+\end{equation} which can be optimized via gradient descent.
+
+\hypertarget{what-other-task-we-can-perform-with-gnn}{%
+\section{What other task we can perform with
+GNN?}\label{what-other-task-we-can-perform-with-gnn}}
+
+Apart from node classification, we can perform several other tasks with
+GNN such as:
+
+\begin{itemize}
+\item
+  Link Prediction: the task is to understand the relationship between
+  entities in graphs and predict if two entities have a connection in
+  between.
+\item
+  Graph Classification: the task is to classify the whole graph into
+  different categories. It is similar to image classification but the
+  target changes into the graph domain.
+\end{itemize}
+
+\hypertarget{use-cases-of-gnn}{%
+\section{Use cases of GNN}\label{use-cases-of-gnn}}
+
+GNNs have been used in various domains for achieving novel tasks as well
+as outperforming state-of-the-art. A few cases are below:
+
+\begin{itemize}
+\item
+  GNNs have been used to learn physical models of complex systems of
+  interacting particles
+\item
+  In recommender systems, the interactions between users and items can
+  be represented as a bipartite graph and the goal is to predict new
+  potential edges (i.e., which items could a user be interested in),
+  which can be achieved with GNNs
+\item
+  Prediction of protein-protein and protein-ligand interactions
+\item
+  Prediction of quantum molecular properties
+\item
+  Generation of novel compounds and drugs
+\end{itemize}
+
+\hypertarget{references}{%
+\section{References}\label{references}}
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://arxiv.org/pdf/1911.02928.pdf}
+\item
+  \url{https://www.mdpi.com/2078-2489/13/8/396}
+\item
+  \url{https://web.archive.org/web/20220525200720/https://persagen.com/files/misc/scarselli2009graph.pdf}
+\item
+  \url{https://arxiv.org/pdf/1812.08434}
+\item
+  \url{https://arxiv.org/pdf/1611.08097.pdf}
+\end{itemize}
+
+\printbibliography
+
+\end{document}

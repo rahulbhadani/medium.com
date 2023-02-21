@@ -570,17 +570,17 @@ file in an editor and copy the following code:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{\textless{}?xml}\OtherTok{ version=}\StringTok{"1.0"}\OtherTok{ encoding=}\StringTok{"UTF{-}8"}\FunctionTok{?\textgreater{}}
-\NormalTok{\textless{}}\KeywordTok{launch}\NormalTok{\textgreater{}}
-\NormalTok{\textless{}}\KeywordTok{arg}\OtherTok{ name=}\StringTok{"robot"}\OtherTok{ default=}\StringTok{"ego"}\NormalTok{/\textgreater{}}
-\NormalTok{    \textless{}}\KeywordTok{arg}\OtherTok{ name=}\StringTok{"r"}\OtherTok{ default=}\StringTok{"20.0"}\NormalTok{/\textgreater{}}
-\NormalTok{    \textless{}}\KeywordTok{param}\OtherTok{ name=}\StringTok{"/$(arg robot)/r"}\OtherTok{ type=}\StringTok{"double"}\OtherTok{ value=}\StringTok{"$(arg r)"}\NormalTok{/\textgreater{}}
-\NormalTok{    \textless{}}\KeywordTok{group}\OtherTok{ ns=}\StringTok{"ego"}\NormalTok{\textgreater{}}
-\NormalTok{        \textless{}}\KeywordTok{node}\OtherTok{ pkg=}\StringTok{"velocity\_control"}\OtherTok{ type=}\StringTok{"velocity\_control"} 
-\OtherTok{                name=}\StringTok{"velocity\_control\_node"}\OtherTok{ output=}\StringTok{"screen"}\NormalTok{/\textgreater{}}
-\NormalTok{     \textless{}/}\KeywordTok{group}\NormalTok{\textgreater{}}
+\OperatorTok{\textless{}}\ExtensionTok{?xml}\NormalTok{ version=}\StringTok{"1.0"}\NormalTok{ encoding=}\StringTok{"UTF{-}8"}\PreprocessorTok{?}\OperatorTok{\textgreater{}}
+\OperatorTok{\textless{}}\NormalTok{launch}\OperatorTok{\textgreater{}}
+\OperatorTok{\textless{}}\NormalTok{arg }\VariableTok{name}\OperatorTok{=}\StringTok{"robot"} \VariableTok{default}\OperatorTok{=}\StringTok{"ego"}\NormalTok{/}\OperatorTok{\textgreater{}}
+    \OperatorTok{\textless{}}\NormalTok{arg }\VariableTok{name}\OperatorTok{=}\StringTok{"r"} \VariableTok{default}\OperatorTok{=}\StringTok{"20.0"}\NormalTok{/}\OperatorTok{\textgreater{}}
+    \OperatorTok{\textless{}}\NormalTok{param }\VariableTok{name}\OperatorTok{=}\StringTok{"/}\VariableTok{$(}\ExtensionTok{arg}\NormalTok{ robot}\VariableTok{)}\StringTok{/r"} \VariableTok{type}\OperatorTok{=}\StringTok{"double"} \VariableTok{value}\OperatorTok{=}\StringTok{"}\VariableTok{$(}\ExtensionTok{arg}\NormalTok{ r}\VariableTok{)}\StringTok{"}\NormalTok{/}\OperatorTok{\textgreater{}}
+    \OperatorTok{\textless{}}\NormalTok{group }\VariableTok{ns}\OperatorTok{=}\StringTok{"ego"}\OperatorTok{\textgreater{}}
+        \OperatorTok{\textless{}}\NormalTok{node }\VariableTok{pkg}\OperatorTok{=}\StringTok{"velocity\_control"} \VariableTok{type}\OperatorTok{=}\StringTok{"velocity\_control"} 
+                \VariableTok{name}\OperatorTok{=}\StringTok{"velocity\_control\_node"} \VariableTok{output}\OperatorTok{=}\StringTok{"screen"}\NormalTok{/}\OperatorTok{\textgreater{}}
+     \OperatorTok{\textless{}}\NormalTok{/group}\OperatorTok{\textgreater{}}
      
-\NormalTok{\textless{}/}\KeywordTok{launch}\NormalTok{\textgreater{}}
+\OperatorTok{\textless{}}\NormalTok{/launch}\OperatorTok{\textgreater{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -627,7 +627,8 @@ script below which executes all \texttt{roslaunch} one by one.
 \ExtensionTok{gnome{-}terminal} \AttributeTok{{-}{-}}\NormalTok{ roslaunch catvehicle spawn.launch robot:=ego X:=0.0 laser\_sensor:=true }
 \FunctionTok{sleep}\NormalTok{ 5}
 \VariableTok{velinjectfile}\OperatorTok{=}\StringTok{"roslaunch catvehicle velinjector.launch}
-\StringTok{csvfile:=/home/ubuntu/test\_data.csv input\_type:=CSV time\_col:=Time vel\_col:=speed robot:=leader str\_angle:=0.0"}
+\StringTok{csvfile:=/home/ubuntu/test\_data.csv input\_type:=CSV }
+\StringTok{time\_col:=Time vel\_col:=speed robot:=leader str\_angle:=0.0"}
 \ExtensionTok{gnome{-}terminal} \AttributeTok{{-}{-}} \VariableTok{$velinjectfile}
 \FunctionTok{sleep}\NormalTok{ 5}
 \ExtensionTok{gnome{-}terminal} \AttributeTok{{-}{-}}\NormalTok{ roslaunch catvehicle velocity\_control.launch robot:=ego r:=2.5}
